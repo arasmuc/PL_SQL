@@ -1,0 +1,88 @@
+SET SERVEROUTPUT ON;
+
+
+CREATE OR REPLACE PACKAGE BMW_LOCK AS
+PROCEDURE lock_extra;
+PROCEDURE unlock_extra;
+END BMW_LOCK;
+/ok
+
+
+CREATE OR REPLACE PACKAGE BODY BMW_LOCK AS
+
+PROCEDURE lock_extra IS
+begin
+dbms_output.put_line  ('---------------------------------------------');
+for s in (select username from dba_users where ACCOUNT_STATUS='OPEN' and username NOT in ( select upper(username) from BMW_System.BMW_STANDARD_USERS union select upper(username) from BMW_System.bmw_no_lock)) 
+  loop
+    execute immediate 'alter user ' || s.username || ' account lock';
+    INSERT INTO BMW_System.bmw_locked VALUES(s.username, SYSDATE);
+    dbms_output.put_line  (s.username || ' has been locked');
+
+    
+end loop;
+
+dbms_output.put_line  ('---------------------------------------------');
+
+for sessions in ( select username, sid, serial# from v$session where username not in (select upper(username) from BMW_System.BMW_STANDARD_USERS 
+union select upper(username) from BMW_System.bmw_no_lock) and username IS NOT NULL)
+  loop
+   execute immediate 'alter system kill session '''||sessions.sid||','||sessions.serial#||'''IMMEDIATE';
+   dbms_output.put_line  (sessions.username || ' session - has been killed');
+end loop;
+END lock_extra;
+
+
+PROCEDURE unlock_extra IS
+begin
+
+dbms_output.put_line  ('---------------------------------------------');
+FOR x IN (select USERNAME, ACCOUNT_STATUS from dba_users)
+   LOOP
+      DBMS_OUTPUT.PUT_LINE(x.USERNAME||'  '||x.ACCOUNT_STATUS);
+   END LOOP;
+dbms_output.put_line  ('---------------------------------------------');
+for user in (select DISTINCT(username) from BMW_System.bmw_locked)
+loop
+execute immediate 'alter user ' || user.username || ' account unlock';
+dbms_output.put_line  (user.username || ' has been unlocked');
+end loop;
+dbms_output.put_line  ('---------------------------------------------');
+FOR x IN (select USERNAME, ACCOUNT_STATUS from dba_users)
+   LOOP
+      DBMS_OUTPUT.PUT_LINE(x.USERNAME||'  '||x.ACCOUNT_STATUS);
+   END LOOP;
+
+
+END unlock_extra;
+END BMW_LOCK;
+/
+
+
+##############   TEST
+
+select username from dba_users where ACCOUNT_STATUS='OPEN' and username NOT in ( select username from BMW_System.BMW_STANDARD_USERS union select username from BMW_System.bmw_no_lock);
+select username , sid, serial# from v$session where username not in (select upper(username) from BMW_System.BMW_STANDARD_USERS union select upper(username) from BMW_System.bmw_no_lock) and username IS NOT NULL;
+select username , sid, serial# from v$session;
+select USERNAME, EVENT_DATE from BMW_System.bmw_locked;
+
+select username, sid, serial# from v$session;
+select USERNAME, ACCOUNT_STATUS from dba_users;
+ 
+exec BMW_LOCK.lock_extra;
+exec BMW_LOCK.unlock_extra;
+
+declare
+your_variable varchar2(19);
+BEGIN
+DBMS_OUTPUT.PUT_LINE('init..');
+ FOR x IN (SELECT      your_column
+                 FROM you_table
+                 where rownum<2
+             order by 1)
+   LOOP
+      DBMS_OUTPUT.PUT_LINE(x.your_column);
+   END LOOP;
+END;
+
+
