@@ -1,0 +1,118 @@
+set serveroutput on;
+
+create or replace package db_alert as
+/* db_alert package searching oracle alert logs and showing
+   ora-errors.
+   author: Arkadiusz Karol Borucki
+   date:  21.08.2015 Frankfurt am Main
+ */
+procedure err_search(search varchar2);
+procedure last_err(search number);
+procedure ora_date(search VARCHAR2);
+procedure last_date(search number);
+end db_alert;
+/
+
+create or replace package body db_alert as
+procedure err_search(search varchar2) is
+
+/* err_search procedure searching oracle alert logs and showing
+   ora-errors. ora-error must be provided as input parameter
+   example: exec err_search ('ora-00600');
+   author: Arkadiusz Karol Borucki
+   date:  21.08.2015 Frankfurt am Main
+ */
+ 
+ a number:=0;
+e varchar2(50):= UPPER(search);
+cursor cur is
+select originating_timestamp, message_text from sys.x$dbgalertext where message_text like e||'%';
+
+begin
+dbms_output.put_line('***********************************');
+for i in cur loop
+dbms_output.put_line('ORA :'||i.originating_timestamp||' '||i.message_text);
+a:=a+1;
+end loop;
+
+if a = 0 then
+   dbms_output.put_line('***********************************');
+   dbms_output.put_line('NO DATA FOUND - alert log clean');
+end if;
+
+end err_search;
+
+
+procedure last_err(search number) is
+/* last_err procedure searching Oracle alert logs and showing
+   ORA-errors occured during last x days. Number of days  must be provided as input parameter
+   example: exec last_err ('2');
+   author: Arkadiusz Karol Borucki
+   date:
+ */
+a number:=0;
+e number:= search;
+cursor cur is
+select ORIGINATING_TIMESTAMP, MESSAGE_TEXT from sys.X$DBGALERTEXT where ORIGINATING_TIMESTAMP > sysdate-e and MESSAGE_TEXT like 'ORA%';
+
+begin
+dbms_output.put_line('***********************************');
+for i in cur loop
+dbms_output.put_line('ORA: '||i.ORIGINATING_TIMESTAMP||' '||i.MESSAGE_TEXT);
+a:=a+1;
+end loop;
+
+if a = 0 then
+   dbms_output.put_line('***********************************');
+   dbms_output.put_line('NO DATA FOUND - alert log clean');
+end if;
+end last_err;
+
+
+procedure ora_date(search VARCHAR2) is
+/* ora_date procedure searching Oracle alert logs and showing
+   database events. Date must be provided as input parameter
+   example: exec ora_date ('12-Oct');
+   author: Arkadiusz Karol Borucki
+   date:
+ */
+a number:=0;
+e varchar2(50):= UPPER(search);
+cursor cur is
+select ORIGINATING_TIMESTAMP, MESSAGE_TEXT from sys.X$DBGALERTEXT where ORIGINATING_TIMESTAMP like e||'%';
+
+begin
+dbms_output.put_line('***********************************');
+for i in cur loop
+dbms_output.put_line('DATE '||i.ORIGINATING_TIMESTAMP||'  ALERT:  '||i.MESSAGE_TEXT);
+a:=a+1;
+end loop;
+
+if a = 0 then
+   dbms_output.put_line('***********************************');
+   dbms_output.put_line('NO DATA FOUND - alert log clean');
+end if;
+end ora_date;
+
+
+
+procedure last_date(search number) is
+/* last_date procedure searching Oracle alert logs and showing
+   database events occured during last x days. Number of days  must be provided as input parameter
+   example: exec last_date ('2');
+   author: Arkadiusz Karol Borucki
+   date:
+ */
+e number:= search;
+cursor cur is
+select ORIGINATING_TIMESTAMP, MESSAGE_TEXT from sys.X$DBGALERTEXT where ORIGINATING_TIMESTAMP > sysdate-e;
+begin
+
+for i in cur loop
+dbms_output.put_line('INFO : '||i.ORIGINATING_TIMESTAMP||' '||i.MESSAGE_TEXT);
+end loop;
+end last_date;
+
+
+end db_alert;
+/
