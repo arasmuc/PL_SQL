@@ -1,0 +1,53 @@
+SET SERVEROUTPUT ON;
+
+create or replace procedure err_search(search VARCHAR2)
+
+/* err_search procedure searching Oracle alert logs and showing
+   ORA-errors with problem description. ORA-error must be provided und as input parameter and ora_error table must
+   be created before script is running
+   example: exec err_search ('ORA-00600')
+   author: Arkadiusz Karol Borucki
+   date:
+ */
+
+is
+a number:=0;
+e varchar2(50):= search;
+cursor cur is
+select ORIGINATING_TIMESTAMP, MESSAGE_TEXT from sys.X$DBGALERTEXT where MESSAGE_TEXT like e||'%';
+/*
+select REGEXP_SUBSTR(MESSAGE_TEXT, 'ORA-[0-9]*') from sys.X$DBGALERTEXT where MESSAGE_TEXT like e||'%';
+*/
+
+
+cursor err is
+select * from sys.ora_error;
+
+begin
+dbms_output.put_line('***********************************');
+
+for i in cur loop
+dbms_output.put_line('ORA: '||i.ORIGINATING_TIMESTAMP||' '||i.MESSAGE_TEXT);
+a:=a+1;
+end loop;
+
+if a = 0 then
+   dbms_output.put_line('***********************************');
+   dbms_output.put_line('NO DATA FOUND - alert log clean');
+end if;
+
+
+if a > 0 then
+for j in err loop  
+if e = j.ora_err then
+dbms_output.put_line('*****************************************************************************************************************************');
+dbms_output.put_line('PROBLEM DESCRIPTION : '|| j.ora_err||'  ' ||j.DESCRIPTION);
+dbms_output.put_line('*****************************************************************************************************************************');
+end if;	  
+end loop;
+end if;
+end;
+/
+
+
+ORA-01555
