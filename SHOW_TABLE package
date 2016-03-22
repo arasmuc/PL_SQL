@@ -7,15 +7,16 @@
    date:   22.03.2016  Munchen, Germany
  */
 
+SET SERVEROUTPUT ON;
+
+
 CREATE OR REPLACE PACKAGE SHOW_TABLE AS
 PROCEDURE table_change (user IN VARCHAR2);
 END SHOW_TABLE;
 /
 
 CREATE OR REPLACE PACKAGE BODY SHOW_TABLE  AS
-PROCEDURE 
-
- (user IN VARCHAR2) IS
+PROCEDURE table_change (user IN VARCHAR2) IS
 u varchar2(50):= user;
 cursor cur is
 SELECT a.owner, a.created, a.object_name, a.LAST_DDL_TIME, a.object_type, b.TABLESPACE_NAME FROM dba_objects a, dba_tables b 
@@ -23,11 +24,10 @@ WHERE  a.owner = u AND a.object_type = 'TABLE' and a.object_name=b.TABLE_NAME an
 
 begin
 for i in cur loop 
-     dbms_output.put_line  (i.owner ||'  '||i.created||'  '||i.LAST_DDL_TIME||' <-- last modification  '||i.object_type||'   '||i.TABLESPACE_NAME ||'    '||i.object_name);
+     dbms_output.put_line  (i.owner ||'  '||i.created||'  '||i.LAST_DDL_TIME||' <-- last modofocation  '||i.object_type||'   '||i.TABLESPACE_NAME ||'    '||i.object_name);
 end loop;
 END table_change;
 END SHOW_TABLE;
 /
-
 
 exec SHOW_TABLE.table_change('ALMA')
