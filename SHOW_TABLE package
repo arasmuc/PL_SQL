@@ -1,7 +1,7 @@
 /* SHOW_TABLE package containts following procedures : 
-   table_change - procedure showing tables creation and modification time for pre definied user.
-                  User name must be provided as an input parameter
-                  exaple :  exec SHOW_TABLE.table_change('USER_NAME')
+   table_change - procedure showing tables creation and modification time for pre definied user/schema.
+                  User/schema name must be provided as an input parameter
+                  exaple :  exec SHOW_TABLE.table_change('SCHEMA_NAME')
                   
    author: Arkadiusz Karol Borucki
    date:   22.03.2016  Munchen, Germany
