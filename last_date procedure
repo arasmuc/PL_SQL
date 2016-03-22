@@ -1,0 +1,24 @@
+SET SERVEROUTPUT ON;
+
+create or replace procedure last_date(search number)
+
+/* last_date procedure searching Oracle alert logs and showing
+   database events occured during last x days. Number of days  must be provided as input parameter
+   example: exec last_date ('2')
+   author: Arkadiusz Karol Borucki
+   date:
+ */
+
+is
+
+e number:= search;
+cursor cur is
+select ORIGINATING_TIMESTAMP, MESSAGE_TEXT from sys.X$DBGALERTEXT where ORIGINATING_TIMESTAMP > sysdate-e;
+
+begin
+
+for i in cur loop
+dbms_output.put_line('INFO : '||i.ORIGINATING_TIMESTAMP||' '||i.MESSAGE_TEXT);
+end loop;
+end;
+/
