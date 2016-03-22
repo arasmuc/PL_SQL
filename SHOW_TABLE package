@@ -9,7 +9,6 @@
 
 SET SERVEROUTPUT ON;
 
-
 CREATE OR REPLACE PACKAGE SHOW_TABLE AS
 PROCEDURE table_change (user IN VARCHAR2);
 END SHOW_TABLE;
@@ -24,7 +23,7 @@ WHERE  a.owner = u AND a.object_type = 'TABLE' and a.object_name=b.TABLE_NAME an
 
 begin
 for i in cur loop 
-     dbms_output.put_line  (i.owner ||'  '||i.created||'  '||i.LAST_DDL_TIME||' <-- last modofocation  '||i.object_type||'   '||i.TABLESPACE_NAME ||'    '||i.object_name);
+     dbms_output.put_line  (i.owner ||'  '||i.created||'  '||i.LAST_DDL_TIME||' <-- last modification  '||i.object_type||'   '||i.TABLESPACE_NAME ||'    '||i.object_name);
 end loop;
 END table_change;
 END SHOW_TABLE;
