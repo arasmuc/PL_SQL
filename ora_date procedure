@@ -1,0 +1,29 @@
+create or replace procedure ora_date(search VARCHAR2)
+
+/* ora_date procedure searching Oracle alert logs and showing
+   database events. Date must be provided as input parameter
+   example: exec ora_date ('12-Oct')
+   author: Arkadiusz Karol Borucki
+   date:
+ */
+
+is
+a number:=0;
+e varchar2(50):= UPPER(search);
+cursor cur is
+select ORIGINATING_TIMESTAMP, MESSAGE_TEXT from sys.X$DBGALERTEXT where ORIGINATING_TIMESTAMP like e||'%';
+
+begin
+dbms_output.put_line('***********************************');
+for i in cur loop
+dbms_output.put_line('DATE '||i.ORIGINATING_TIMESTAMP||'  ALERT:  '||i.MESSAGE_TEXT);
+a:=a+1;
+end loop;
+
+if a = 0 then
+   dbms_output.put_line('***********************************');
+   dbms_output.put_line('NO DATA FOUND - alert log clean');
+end if;
+
+end;
+/
