@@ -1,0 +1,7 @@
+BEGIN
+    FOR t IN (SELECT SYNONYM_NAME FROM user_synonyms WHERE synonym_name LIKE 'XML_%_ENTIT%') 
+    LOOP   
+        EXECUTE IMMEDIATE 'GRANT SELECT ON ' || t.SYNONYM_NAME || ' TO AREK_USER';    
+    END LOOP;
+END;
+/
